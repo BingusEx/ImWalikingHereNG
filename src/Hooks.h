@@ -1,7 +1,12 @@
 #pragma once
 
+#include "CollisionHandler.h"
 
 namespace Hooks
 {
-	void Install();
+	inline void Install()
+	{
+		CollisionHandler::GetSingleton()->Install();
+		logger::debug("Installed all hooks"sv);
+	}
 }

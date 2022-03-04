@@ -1,67 +1,70 @@
-﻿#include "Events.h"
+#include "Events.h"
 #include "Hooks.h"
-#include "Settings.h"
-#include "version.h"
 
-
-void MessageHandler(SKSE::MessagingInterface::Message* a_msg)
+namespace
 {
-	switch (a_msg->type) {
-	case SKSE::MessagingInterface::kDataLoaded:
-		Events::Install();
-		break;
+	void InitializeLog()
+	{
+#ifndef NDEBUG
+		auto sink = std::make_shared<spdlog::sinks::msvc_sink_mt>();
+#else
+		auto path = logger::log_directory();
+		if (!path) {
+			util::report_and_fail("Failed to find standard logging directory"sv);
+		}
+
+		*path /= fmt::format("{}.log", Plugin::NAME);
+		auto sink = std::make_shared<spdlog::sinks::basic_file_sink_mt>(path->string(), true);
+#endif
+
+#ifndef NDEBUG
+		const auto level = spdlog::level::trace;
+#else
+		const auto level = spdlog::level::info;
+#endif
+
+		auto log = std::make_shared<spdlog::logger>("global log"s, std::move(sink));
+		log->set_level(level);
+		log->flush_on(level);
+
+		spdlog::set_default_logger(std::move(log));
+		spdlog::set_pattern("%g(%#): [%^%l%$] %v"s);
+	}
+
+	void MessageHandler(SKSE::MessagingInterface::Message* a_msg)
+	{
+		switch (a_msg->type) {
+		case SKSE::MessagingInterface::kDataLoaded:
+			Events::Install();
+			break;
+		}
 	}
 }
 
+extern "C" DLLEXPORT constinit auto SKSEPlugin_Version = []() {
+	SKSE::PluginVersionData v;
 
-extern "C" DLLEXPORT bool APIENTRY SKSEPlugin_Query(const SKSE::QueryInterface* a_skse, SKSE::PluginInfo* a_info)
+	v.PluginVersion(Plugin::VERSION);
+	v.PluginName(Plugin::NAME);
+
+	v.UsesAddressLibrary(true);
+	v.CompatibleVersions({ SKSE::RUNTIME_LATEST });
+
+	return v;
+}();
+
+extern "C" DLLEXPORT bool SKSEAPI SKSEPlugin_Load(const SKSE::LoadInterface* a_skse)
 {
-	SKSE::Logger::OpenRelative(FOLDERID_Documents, L"\\My Games\\Skyrim Special Edition\\SKSE\\ImWalkinHere.log");
-	SKSE::Logger::SetPrintLevel(SKSE::Logger::Level::kDebugMessage);
-	SKSE::Logger::SetFlushLevel(SKSE::Logger::Level::kDebugMessage);
-	SKSE::Logger::UseLogStamp(true);
-	SKSE::Logger::TrackTrampolineStats(true);
+	InitializeLog();
+	logger::info("{} v{}"sv, Plugin::NAME, Plugin::VERSION.string());
 
-	_MESSAGE("ImWalkinHere v%s", WLKN_VERSION_VERSTRING);
+	Settings::load();
 
-	a_info->infoVersion = SKSE::PluginInfo::kVersion;
-	a_info->name = "ImWalkinHere";
-	a_info->version = WLKN_VERSION_MAJOR;
+	SKSE::Init(a_skse);
+	SKSE::AllocTrampoline(1 << 4);
 
-	if (a_skse->IsEditor()) {
-		_FATALERROR("Loaded in editor, marking as incompatible!");
-		return false;
-	}
-
-	auto ver = a_skse->RuntimeVersion();
-	if (ver < SKSE::RUNTIME_1_5_39) {
-		_FATALERROR("Unsupported runtime version %s!", ver.GetString().c_str());
-		return false;
-	}
-
-	return true;
-}
-
-
-extern "C" DLLEXPORT bool APIENTRY SKSEPlugin_Load(const SKSE::LoadInterface* a_skse)
-{
-	_MESSAGE("ImWalkinHere loaded");
-
-	if (!SKSE::Init(a_skse)) {
-		return false;
-	}
-
-	if (!Settings::LoadSettings()) {
-		_FATALERROR("Failed to load settings!");
-		return false;
-	}
-
-	if (!SKSE::AllocTrampoline(1 << 4)) {
-		return false;
-	}
-
-	auto messaging = SKSE::GetMessagingInterface();
-	if (!messaging->RegisterListener("SKSE", MessageHandler)) {
+	auto message = SKSE::GetMessagingInterface();
+	if (!message->RegisterListener(MessageHandler)) {
 		return false;
 	}
 

@@ -1,6 +1,5 @@
 #pragma once
 
-
 namespace Events
 {
 	class MenuOpenCloseHandler : public RE::BSTEventSink<RE::MenuOpenCloseEvent>
@@ -8,27 +7,45 @@ namespace Events
 	public:
 		using EventResult = RE::BSEventNotifyControl;
 
+		[[nodiscard]] static auto GetSingleton()
+			-> util::not_null<MenuOpenCloseHandler*>
+		{
+			static MenuOpenCloseHandler singleton;
+			return &singleton;
+		}
 
-		static MenuOpenCloseHandler* GetSingleton();
-		static void Install();
+		virtual EventResult ProcessEvent(
+			const RE::MenuOpenCloseEvent* a_event,
+			RE::BSTEventSource<RE::MenuOpenCloseEvent>*) override
+		{
+			const auto intfcStr = RE::InterfaceStrings::GetSingleton();
+			if (a_event->menuName == intfcStr->dialogueMenu) {
+				_inDialogue = a_event->opening;
+			}
 
-		virtual EventResult ProcessEvent(const RE::MenuOpenCloseEvent* a_event, RE::BSTEventSource<RE::MenuOpenCloseEvent>* a_eventSource) override;
+			return EventResult::kContinue;
+		}
 
-		bool IsInDialogue() const;
+		void Install()
+		{
+			const auto ui = RE::UI::GetSingleton();
+			ui->AddEventSink(MenuOpenCloseHandler::GetSingleton());
+			logger::debug("Added menu open/close event sink"sv);
+		}
+
+		bool IsInDialogue() const { return _inDialogue; }
 
 	private:
 		MenuOpenCloseHandler() = default;
-		MenuOpenCloseHandler(const MenuOpenCloseHandler&) = delete;
-		MenuOpenCloseHandler(MenuOpenCloseHandler&&) = delete;
-		virtual ~MenuOpenCloseHandler() = default;
-
-		MenuOpenCloseHandler& operator=(const MenuOpenCloseHandler&) = delete;
-		MenuOpenCloseHandler& operator=(MenuOpenCloseHandler&&) = delete;
-
+		MenuOpenCloseHandler(const volatile MenuOpenCloseHandler&) = delete;
+		MenuOpenCloseHandler& operator=(const volatile MenuOpenCloseHandler&&) = delete;
 
 		std::atomic_bool _inDialogue;
 	};
 
-
-	void Install();
+	inline void Install()
+	{
+		MenuOpenCloseHandler::GetSingleton()->Install();
+		logger::debug("Installed all event handlers");
+	}
 }
