@@ -1,4 +1,4 @@
-# I'm Walkin' Here
+# I'm Walkin' Here with Pets
 
 ## Settings
 Setting | Description
@@ -7,3 +7,4 @@ Setting | Description
 `disableAllyCollision` | Disables collision between the player and their allies.
 `disableSummonCollision` | Disables collision between the player and their summons.
 `disableAllySummonCollision` | Disables collision between the player and their allies' summons.
+`disablePetCollision` | Disables collision between the player and their pets (from CC Pets).
