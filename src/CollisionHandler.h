@@ -75,7 +75,12 @@ protected:
             return false;
         }
 
-        const auto hCommander = colActor->GetCommandingActor()->CreateRefHandle();
+        const auto commandingActor = colActor->GetCommandingActor();
+        if (!commandingActor) {
+            return false;
+        }
+
+        const auto hCommander = commandingActor->CreateRefHandle();
         const auto hPlayer = player->CreateRefHandle();
         return hCommander && hCommander == hPlayer;
     }
@@ -97,6 +102,35 @@ protected:
         const auto commander = colActor->GetCommandingActor().get();
         return commander && commander->IsPlayerTeammate();
     }
+};
+
+class PetCollider : public ICollider {
+public:
+    PetCollider() : ICollider()
+    {
+        auto dataHandler = RE::TESDataHandler::GetSingleton();
+        _petsFaction = dataHandler->LookupForm<RE::TESFaction>(0x2F1B, "Update.esm");
+        if (_petsFaction) {
+            logger::debug("Pets faction is found"sv);
+        }
+    }
+protected:
+    bool ShouldIgnoreCollision(RE::TESObjectREFR* a_colRef) override {
+        if (!_petsFaction || !a_colRef || a_colRef->IsNot(RE::FormType::ActorCharacter)) {
+            return false;
+        }
+
+        const auto player = RE::PlayerCharacter::GetSingleton();
+        const auto colActor = static_cast<RE::Actor*>(a_colRef);
+        if (!player || colActor->IsAMount()) {
+            return false;
+        }
+
+        return colActor && colActor->IsInFaction(_petsFaction);
+    }
+
+private:
+    RE::TESFaction* _petsFaction;
 };
 
 class CollisionHandler {
@@ -135,18 +169,27 @@ private:
     bool Init() {
         if (*Settings::disableAllyCollision) {
             _colliders.push_back(std::make_unique<AllyCollider>());
+            logger::info("disableAllyCollision");
         }
 
         if (*Settings::disableAllySummonCollision) {
             _colliders.push_back(std::make_unique<AllySummonCollider>());
+            logger::info("disableAllySummonCollision");
         }
 
         if (*Settings::disableDialogueCollision) {
             _colliders.push_back(std::make_unique<DialogueCollider>());
+            logger::info("disableDialogueCollision");
         }
 
         if (*Settings::disableSummonCollision) {
             _colliders.push_back(std::make_unique<SummonCollider>());
+            logger::info("disableSummonCollision");
+        }
+
+        if (*Settings::disablePetCollision) {
+            _colliders.push_back(std::make_unique<PetCollider>());
+            logger::info("disablePetCollision");
         }
 
         return !_colliders.empty();

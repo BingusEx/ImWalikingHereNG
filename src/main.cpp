@@ -35,6 +35,7 @@ namespace {
     void MessageHandler(SKSE::MessagingInterface::Message* a_msg) {
         switch (a_msg->type) {
             case SKSE::MessagingInterface::kDataLoaded:
+                Hooks::Install();
                 Events::Install();
                 break;
         }
@@ -57,8 +58,8 @@ SKSEPluginLoad(const LoadInterface* skse) {
         return false;
     }
 
-    Hooks::Install();
-
+    Settings::load();
     log::info("{} has finished loading.", plugin->GetName());
+
     return true;
 }

@@ -1,22 +1,23 @@
 {
-    "$schema": "https://raw.githubusercontent.com/microsoft/vcpkg/master/scripts/vcpkg.schema.json",
-    "name": "imwalkinhere",
-    "version-string": "1.7.0",
-    "port-version": 0,
-    "description": "",
-    "homepage": "",
-    "license": "MIT",
-    "features": {
-        "plugin": {
-            "description": "Build the SKSE plugin.",
-            "dependencies": [
-                "articuno",
-                "commonlibsse-ng",
-                "tomlplusplus"
-            ]
-        }
-    },
-    "default-features": [
-        "plugin"
-    ]
+  "$schema": "https://raw.githubusercontent.com/microsoft/vcpkg/master/scripts/vcpkg.schema.json",
+  "name": "imwalkinhere",
+  "version-string": "1.7.0",
+  "port-version": 0,
+  "description": "",
+  "homepage": "",
+  "license": "MIT",
+  "features": {
+    "plugin": {
+      "description": "Build the SKSE plugin.",
+      "dependencies": [
+        "articuno",
+        "commonlibsse-ng",
+        "tomlplusplus"
+      ]
+    }
+  },
+  "default-features": [
+    "plugin"
+  ],
+  "builtin-baseline": "d086d46fe2e30c7c03d770b2efc1502914280215"
 }
