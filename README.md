@@ -8,3 +8,4 @@ Setting | Description
 `disableSummonCollision` | Disables collision between the player and their summons.
 `disableAllySummonCollision` | Disables collision between the player and their allies' summons.
 `disablePetCollision` | Disables collision between the player and their pets (from CC Pets).
+`disableAllCollisionOutsideOfCombat` | Disables all collision unless the actor is in combat.
