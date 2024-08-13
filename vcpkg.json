@@ -1,23 +1,34 @@
 {
-  "$schema": "https://raw.githubusercontent.com/microsoft/vcpkg/master/scripts/vcpkg.schema.json",
+  "$schema": "https://raw.githubusercontent.com/microsoft/vcpkg-tool/main/docs/vcpkg.schema.json",
   "name": "imwalkinhere",
   "version-string": "1.7.0",
   "port-version": 0,
   "description": "",
-  "homepage": "",
   "license": "MIT",
   "features": {
     "plugin": {
       "description": "Build the SKSE plugin.",
       "dependencies": [
-        "articuno",
+        "fmt",
         "commonlibsse-ng",
-        "tomlplusplus"
+        "tomlplusplus",
+        "glm",
+        "toml11",
+        "nlohmann-json",
+        "gluino",
+        "ryml",
+        "articuno"
       ]
     }
   },
   "default-features": [
     "plugin"
   ],
-  "builtin-baseline": "d086d46fe2e30c7c03d770b2efc1502914280215"
+  "overrides": [
+      {
+        "name": "fmt",
+        "version": "9.1.0"
+      }
+  ],
+  "builtin-baseline": "a7d99a5c3cd1456af023051d025a5643a2d6e79c"
 }

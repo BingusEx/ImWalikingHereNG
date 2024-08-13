@@ -104,6 +104,27 @@ protected:
     }
 };
 
+class CombatCollider : public ICollider {
+protected:
+    bool ShouldIgnoreCollision(RE::TESObjectREFR* a_colRef) override {
+
+        //Null Refr
+        if(!a_colRef) return false;
+
+        const auto colActor = static_cast<RE::Actor*>(a_colRef);
+        //Invallid Actor Cast Probably an object refr
+        if(!colActor) return false;
+
+        const auto player = RE::PlayerCharacter::GetSingleton();
+        //If this is broken then your game is broken
+        if(!player) return false;
+
+        //The combat check, is the actor not in combat then disable colisions
+        return !colActor->IsInCombat();
+    }
+};
+
+
 class PetCollider : public ICollider {
 public:
     PetCollider() : ICollider()
@@ -167,6 +188,12 @@ private:
     }
 
     bool Init() {
+
+        if (*Settings::disableAllCollisionOutsideOfCombat) {
+            _colliders.push_back(std::make_unique<CombatCollider>());
+            logger::info("disableAllyCollision");
+        }
+
         if (*Settings::disableAllyCollision) {
             _colliders.push_back(std::make_unique<AllyCollider>());
             logger::info("disableAllyCollision");
