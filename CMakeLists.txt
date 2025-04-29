@@ -8,64 +8,46 @@ project(
         ImWalkinHere
         VERSION 1.7.0
         DESCRIPTION ""
-        LANGUAGES CXX)
+        LANGUAGES CXX
+)
+        
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_INTERPROCEDURAL_OPTIMIZATION ON)
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON CACHE INTERNAL "")
+add_compile_definitions(_DISABLE_EXTENDED_ALIGNED_STORAGE)
 
-include(GNUInstallDirs)
+list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake")
 
-configure_file(
-        ${CMAKE_CURRENT_SOURCE_DIR}/cmake/version.rc.in
-        ${CMAKE_CURRENT_BINARY_DIR}/version.rc
-        @ONLY)
-
-set(headers
-        include/AutoTOML.hpp)
-
-set(sources
-        src/CollisionHandler.cpp
-        src/Main.cpp
-
-        ${CMAKE_CURRENT_BINARY_DIR}/version.rc)
-
-source_group(
-        TREE ${CMAKE_CURRENT_SOURCE_DIR}
-        FILES
-        ${headers}
-        ${sources})
+include(FetchContent)
+FetchContent_Declare(
+    tomlplusplus
+    GIT_REPOSITORY https://github.com/marzer/tomlplusplus.git
+    GIT_TAG        v3.4.0
+)
+FetchContent_MakeAvailable(tomlplusplus)
 
 ########################################################################################################################
 ## Configure target DLL
 ########################################################################################################################
-find_package(CommonLibSSE CONFIG REQUIRED)
-find_package(ryml CONFIG REQUIRED)
-find_path(ARTICUNO_INCLUDE_DIRS "articuno/articuno.h")
+include(XSEPlugin)
 
-add_commonlibsse_plugin(${PROJECT_NAME} SOURCES ${headers} ${sources})
-add_library("${PROJECT_NAME}::${PROJECT_NAME}" ALIAS "${PROJECT_NAME}")
 
-target_include_directories(${PROJECT_NAME}
-        PRIVATE
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src>
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/src>
-        $<INSTALL_INTERFACE:src>
-        ${ARTICUNO_INCLUDE_DIRS})
+target_include_directories(
+	${PROJECT_NAME}
+	PRIVATE
+	${CLIB_UTIL_INCLUDE_DIRS}
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+)
 
-target_include_directories(${PROJECT_NAME}
-        PUBLIC
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>)
+target_link_libraries(
+	${PROJECT_NAME}
+	PRIVATE
+    tomlplusplus::tomlplusplus
+)
 
-target_link_libraries(${PROJECT_NAME}
-        PRIVATE
-        ryml::ryml)
-
-target_precompile_headers(${PROJECT_NAME}
-        PRIVATE
-        src/PCH.h)
-
-install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/include/Sample"
-        DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}")
-
-install(TARGETS ${PROJECT_NAME}
-        DESTINATION "${CMAKE_INSTALL_LIBDIR}")
+target_precompile_headers(
+	"${PROJECT_NAME}"
+	PRIVATE
+	src/PCH.h
+)

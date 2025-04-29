@@ -155,6 +155,7 @@ private:
 };
 
 class CollisionHandler {
+
 public:
     [[nodiscard]] static auto GetSingleton() -> util::not_null<CollisionHandler*> {
         static CollisionHandler singleton;
@@ -170,6 +171,7 @@ public:
         REL::Relocation<std::uintptr_t> target{RELOCATION_ID(36359, 37350), REL::Module::GetRuntime() != REL::Module::Runtime::AE ? 0xF0 : 0xFB};
 
         auto& trampoline = SKSE::GetTrampoline();
+        trampoline.create(14);
         _applyMovementDelta = trampoline.write_call<5>(target.address(), Hook_ApplyMovementDelta);
 
         logger::debug("Installed hooks for collision handler"sv);

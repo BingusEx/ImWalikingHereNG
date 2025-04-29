@@ -9,26 +9,17 @@
     "plugin": {
       "description": "Build the SKSE plugin.",
       "dependencies": [
-        "fmt",
-        "commonlibsse-ng",
-        "tomlplusplus",
-        "glm",
-        "toml11",
-        "nlohmann-json",
-        "gluino",
-        "ryml",
-        "articuno"
+		"fmt",
+		"directxtk",
+		"spdlog",
+    "rapidcsv",
+    "xbyak"
+
       ]
     }
   },
   "default-features": [
     "plugin"
   ],
-  "overrides": [
-      {
-        "name": "fmt",
-        "version": "9.1.0"
-      }
-  ],
-  "builtin-baseline": "a7d99a5c3cd1456af023051d025a5643a2d6e79c"
+  "builtin-baseline": "3c7ab2b654826d73abf1e9169162909fcca53491"
 }
