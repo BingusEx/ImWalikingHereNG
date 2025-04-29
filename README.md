@@ -1,4 +1,4 @@
-# I'm Walkin' Here with Pets
+# I'm Walkin' Here NG (With Pets and a Combat Only Addon)
 
 ## Settings
 Setting | Description
